@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CV Builder</title>
+<meta name="description" content="Build an ATS-friendly CV for the Malaysian job market. Three career tiers, ten themes, PDF and Word export. Runs entirely in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">CV</span>
+    <div>
+      <h1>CV Builder</h1>
+      <p>ATS-ready CVs for the Malaysian job market</p>
+    </div>
+  </div>
+  <div class="actions">
+    <button type="button" id="btn-pdf" class="btn primary">Download PDF</button>
+    <button type="button" id="btn-docx" class="btn">Word (.docx)</button>
+    <button type="button" id="btn-copy" class="btn">Copy text</button>
+    <details class="menu">
+      <summary class="btn">More</summary>
+      <div class="menu-list">
+        <button type="button" id="btn-txt">Download plain text (.txt)</button>
+        <button type="button" id="btn-save-json">Save my data (.json)</button>
+        <label for="file-json">Load saved data (.json)<input type="file" id="file-json" accept=".json,application/json"></label>
+        <button type="button" id="btn-example">Load example CV</button>
+        <button type="button" id="btn-blank">Start blank</button>
+      </div>
+    </details>
+  </div>
+</header>
+
+<nav class="mobile-tabs" aria-label="View">
+  <button type="button" data-tab-btn="edit">Edit</button>
+  <button type="button" data-tab-btn="preview">Preview</button>
+  <button type="button" data-tab-btn="ats">ATS check <span class="score-pill" data-score>-</span></button>
+</nav>
+
+<main class="layout">
+  <aside class="editor-pane" aria-label="CV editor">
+    <section class="block">
+      <h2>Career level</h2>
+      <div class="tiers">
+        <button type="button" class="tier" data-tier="student"><b>Student</b><span>Fresh graduate, intern</span></button>
+        <button type="button" class="tier" data-tier="mid"><b>Professional</b><span>2 to 10 years</span></button>
+        <button type="button" class="tier" data-tier="senior"><b>Senior</b><span>Manager to C-suite</span></button>
+      </div>
+      <p class="hint" id="tier-blurb"></p>
+    </section>
+
+    <section class="block">
+      <h2>Theme</h2>
+      <div class="themes" id="themes"></div>
+      <p class="hint">Every theme is one column with standard fonts and real text, so ATS software reads them all the same way.</p>
+    </section>
+
+    <div class="banner" id="example-banner" hidden>
+      <p>This is an example CV with a fictional person. Edit any field to make it yours, or <button type="button" class="link" id="banner-blank">start blank</button>.</p>
+    </div>
+
+    <div id="editor"></div>
+  </aside>
+
+  <section class="output-pane">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab-btn="preview">Preview</button>
+      <button type="button" role="tab" data-tab-btn="ats">ATS check <span class="score-pill" data-score>-</span></button>
+    </div>
+
+    <div class="tab-panel" data-panel="preview">
+      <p class="meta" id="preview-meta"></p>
+      <div class="pages" id="pages"></div>
+    </div>
+
+    <div class="tab-panel" data-panel="ats">
+      <div class="ats-head">
+        <div class="score-big"><span data-score>-</span><small>/100</small></div>
+        <div>
+          <h2>ATS readiness</h2>
+          <p class="muted">Checks the problems that most often get CVs filtered out by applicant tracking systems and Malaysian recruiters. No tool can guarantee every employer's system accepts a CV, but these rules cover the common failures.</p>
+        </div>
+      </div>
+      <ul class="checks" id="checks"></ul>
+
+      <h3>Match a job ad</h3>
+      <label for="job-ad" class="muted">Paste the job description from JobStreet, Hiredly, LinkedIn or a company site.</label>
+      <textarea id="job-ad" rows="6" placeholder="We are looking for a Graduate Engineer with experience in Python, ROS and PLC programming..."></textarea>
+      <div id="match"></div>
+
+      <details class="plain">
+        <summary>What the ATS reads (plain text)</summary>
+        <pre id="plain-text"></pre>
+      </details>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/tiers.js"></script>
+<script src="js/samples.js"></script>
+<script src="js/blocks.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/export-pdf.js"></script>
+<script src="js/export-docx.js"></script>
+<script src="js/export-text.js"></script>
+<script src="js/ats.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
