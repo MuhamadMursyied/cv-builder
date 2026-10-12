@@ -21,6 +21,7 @@
     </div>
   </div>
   <div class="actions">
+    <label class="btn" for="file-import">Import CV<input type="file" id="file-import" class="visually-hidden" accept=".pdf,.docx,.txt,.json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/json"></label>
     <button type="button" id="btn-pdf" class="btn primary">Download PDF</button>
     <button type="button" id="btn-docx" class="btn">Word (.docx)</button>
     <button type="button" id="btn-copy" class="btn">Copy text</button>
@@ -62,8 +63,10 @@
     </section>
 
     <div class="banner" id="example-banner" hidden>
-      <p>This is an example CV with a fictional person. Edit any field to make it yours, or <button type="button" class="link" id="banner-blank">start blank</button>.</p>
+      <p>This is an example CV with a fictional person. Edit any field to make it yours, <label class="link" for="file-import">import your existing CV</label> (PDF or Word), or <button type="button" class="link" id="banner-blank">start blank</button>.</p>
     </div>
+
+    <div class="notice" id="import-notice" hidden></div>
 
     <div id="editor"></div>
   </aside>
@@ -115,6 +118,7 @@
 <script src="js/export-docx.js"></script>
 <script src="js/export-text.js"></script>
 <script src="js/ats.js"></script>
+<script src="js/import.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/app.js"></script>
 </body>

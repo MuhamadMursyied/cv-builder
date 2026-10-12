@@ -343,6 +343,94 @@ $('#file-json').addEventListener('change', function (e) {
   };
   reader.readAsText(file);
 });
+/* ---------- import an existing CV ---------- */
+
+var SECTION_NAMES = { summary: 'Summary', experience: 'Experience', education: 'Education', skills: 'Skills', projects: 'Projects', activities: 'Activities', certifications: 'Certifications', achievements: 'Achievements', languages: 'Languages', additional: 'Additional information', referees: 'References' };
+var beforeImport = null;
+
+function showImportNotice(html, isError) {
+  var el = $('#import-notice');
+  el.innerHTML = html + '<div class="notice-actions">' +
+    (beforeImport ? '<button type="button" class="btn" data-notice="undo">Undo import</button>' : '') +
+    '<button type="button" class="btn" data-notice="close">Close</button></div>';
+  el.classList.toggle('error', !!isError);
+  el.hidden = false;
+  el.scrollIntoView({ block: 'nearest' });
+}
+
+$('#import-notice').addEventListener('click', function (e) {
+  var btn = e.target.closest('[data-notice]');
+  if (!btn) return;
+  if (btn.dataset.notice === 'undo' && beforeImport) {
+    state = beforeImport;
+    beforeImport = null;
+    saveState();
+    renderAll();
+    toast('Import undone.');
+  }
+  $('#import-notice').hidden = true;
+});
+
+function countOf(key) {
+  var v = state[key];
+  if (Array.isArray(v)) return v.length;
+  return v ? 1 : 0;
+}
+
+function importedSummary(fileName, notes) {
+  var tier = CV.TIERS[state.tier];
+  var found = Object.keys(SECTION_NAMES).filter(function (k) { return countOf(k); }).map(function (k) {
+    var n = countOf(k);
+    return SECTION_NAMES[k] + (Array.isArray(state[k]) && n > 1 ? ' (' + n + ')' : '');
+  });
+  var html = '<h3>Imported ' + escapeHtml(fileName) + '</h3>' +
+    '<p>Filled in: ' + (found.length ? found.join(', ') : 'contact details only') + '. Career level set to <b>' + tier.short + '</b>; change it above if that is wrong.</p>' +
+    '<p class="muted">Automatic import is a head start, not a perfect copy. Check each section, especially job titles, company names and dates.</p>';
+  if (notes.skippedSensitive.length) {
+    html += '<p class="muted">Left out ' + notes.skippedSensitive.length + ' personal detail line' + (notes.skippedSensitive.length > 1 ? 's' : '') + ' (IC number, race, religion, age or similar). They are not needed on a CV.</p>';
+  }
+  if (notes.unplaced.length) {
+    html += '<details><summary>' + notes.unplaced.length + ' line' + (notes.unplaced.length > 1 ? 's' : '') + ' could not be placed</summary><ul>' +
+      notes.unplaced.map(function (l) { return '<li>' + escapeHtml(l) + '</li>'; }).join('') + '</ul></details>';
+  }
+  return html;
+}
+
+function loadJsonCv(file) {
+  return file.text().then(function (textContent) {
+    var data = JSON.parse(textContent);
+    if (!data || !data.personal) throw new Error('not-cv-json');
+    return { cv: data, notes: { unplaced: [], skippedSensitive: [] }, isJson: true };
+  });
+}
+
+$('#file-import').addEventListener('change', function (e) {
+  var file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  document.querySelector('.menu').open = false;
+  toast('Reading ' + file.name + '...');
+  var job = /\.json$/i.test(file.name) ? loadJsonCv(file) : CV.importCvFile(file);
+  job.then(function (result) {
+    beforeImport = JSON.parse(JSON.stringify(state));
+    state = normalise(result.cv);
+    state.isExample = false;
+    openSections = { personal: true, summary: true, experience: true, education: true };
+    saveState();
+    renderAll();
+    if (result.isJson) showImportNotice('<h3>Loaded ' + escapeHtml(file.name) + '</h3><p>Your saved CV is back, exactly as you left it.</p>');
+    else showImportNotice(importedSummary(file.name, result.notes));
+    toast('Imported ' + file.name);
+  }).catch(function (err) {
+    var msg = {
+      'no-text': 'This PDF has no selectable text, so it is probably a scanned image or a photo. ATS software cannot read it either, which is a good reason to rebuild it here. Import a Word version if you have one, or type your details in.',
+      'old-doc': 'Old .doc files cannot be read. Open it in Word or Google Docs, save it as .docx or PDF, then import that.',
+      'not-cv-json': 'That .json file was not saved from CV Builder.'
+    }[err && err.message] || 'Could not read ' + file.name + '. Try saving it as PDF or .docx and import again.';
+    showImportNotice('<h3>Import failed</h3><p>' + escapeHtml(msg) + '</p>', true);
+  });
+});
+
 $('#btn-blank').addEventListener('click', function () {
   state = normalise(CV.emptyCV(state.tier));
   openSections = { personal: true };

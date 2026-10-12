@@ -20,7 +20,9 @@ function wordCount(text) { return String(text || '').trim().split(/\s+/).filter(
 function inputField(label, path, value, opts) {
   opts = opts || {};
   var id = idFor(path);
-  var type = opts.type === 'month' ? 'month' : (opts.type || 'text');
+  var type = opts.type || 'text';
+  // Imported dates can be year-only ("2019"); a month picker would show those as empty.
+  if (type === 'month' && value && !/^\d{4}-\d{2}$/.test(value)) type = 'text';
   var attrs = ' id="' + id + '" data-path="' + path + '" placeholder="' + esc(opts.placeholder || '') + '"' + (opts.disabled ? ' disabled' : '') + (opts.autocomplete ? ' autocomplete="' + opts.autocomplete + '"' : '');
   var control = opts.multiline
     ? '<textarea' + attrs + ' rows="' + (opts.rows || 4) + '">' + esc(value) + '</textarea>'

@@ -15,6 +15,7 @@ A browser-based CV builder for the Malaysian job market. Pick your career level,
   | Mid-career professional | Summary, skills, experience with measurable results | 1 to 2 pages |
   | Senior / executive | Executive summary, key achievements, core competencies | 2 to 3 pages |
 - **Ten themes** (Modern, Classic, Executive, Minimal, Compact, Corporate, Scholar, Engineer, Heritage, Monochrome). Each one is ATS-safe by design; themes change only typography, accent colour and heading style.
+- **Import an existing CV**: upload a PDF, Word (.docx) or text file and the form fills itself in. It understands English and Malay headings (Pengalaman Kerja, Pendidikan, Kemahiran), Malaysian date styles (Jan 2022 - Kini) and leaves out IC number, race and religion. A review panel lists what was filled, anything it could not place, and an Undo button.
 - **Exports**: text-based PDF, Word (.docx), plain text (.txt) and a JSON backup you can load later.
 - **ATS check**: a score out of 100 with fixes for missing contact details, undated entries, weak bullet wording, length, sensitive personal data and more.
 - **Job-ad match**: paste a job description and see which of its keywords your CV already uses and which are missing.
@@ -58,7 +59,12 @@ python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-Works in current Chrome, Edge, Firefox and Safari. The only third-party code is [jsPDF](https://github.com/parallax/jsPDF) 2.5.1 (MIT), vendored in `vendor/` so the app also works offline.
+Works in current Chrome, Edge, Firefox and Safari. Third-party code, vendored in `vendor/` so the app also works offline:
+
+- [jsPDF](https://github.com/parallax/jsPDF) 2.5.1 (MIT) to write PDFs
+- [pdf.js](https://github.com/mozilla/pdf.js) 3.11.174 (Apache-2.0) to read PDFs on import. It loads only when someone imports a PDF.
+
+Word files are read without a library, using the browser's built-in `DecompressionStream`.
 
 To deploy, push the folder to any static host (GitHub Pages, Netlify, Cloudflare Pages). For GitHub Pages: Settings, Pages, deploy from the `main` branch root.
 
@@ -77,9 +83,10 @@ js/export-pdf.js      draws the same layout with jsPDF
 js/export-docx.js     writes a .docx (WordprocessingML + tiny ZIP writer)
 js/export-text.js     plain-text export
 js/ats.js             ATS checks and job-ad keyword match
+js/import.js          reads PDF/DOCX/TXT and parses it into CV data
 js/editor.js          builds the editor form
 js/app.js             state, autosave, events and downloads
-vendor/               jsPDF (MIT)
+vendor/               jsPDF (MIT), pdf.js (Apache-2.0)
 ```
 
 ### How it works
@@ -110,8 +117,9 @@ Add one line to `js/themes.js`:
 ## Limitations
 
 - The standard PDF fonts cover Latin script only. Names in Chinese, Tamil or Jawi characters are removed from the export (and flagged by the ATS check). Write names in their romanised form.
+- CV import is rule-based. Single-column CVs import best; two-column designs, tables and text boxes can put details in the wrong section, so the app asks you to review the result. Scanned PDFs (images) have no text to read.
 - Keyword matching is literal. It will not know that "JS" and "JavaScript" are the same skill, so mirror the job ad's wording.
 
 ## License
 
-MIT. See [LICENSE](LICENSE). jsPDF is MIT licensed; see `vendor/jspdf.LICENSE`.
+MIT. See [LICENSE](LICENSE). jsPDF is MIT licensed (`vendor/jspdf.LICENSE`); pdf.js is Apache-2.0 licensed (`vendor/pdfjs.LICENSE`).
