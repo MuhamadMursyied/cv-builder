@@ -2,6 +2,8 @@
 
 A browser-based CV builder for the Malaysian job market. Pick your career level, choose one of ten themes, fill in your details and download an ATS-friendly PDF or Word file. Everything runs locally in your browser: no account, no server, no data leaves your machine.
 
+**Live demo:** https://muhamadmursyied.github.io/cv-builder/
+
 ![Editor and live preview](docs/editor.png)
 
 ## Features
@@ -45,7 +47,7 @@ No tool can guarantee that every employer's system accepts a CV, because each co
 It is a static site with no build step and no backend.
 
 ```bash
-git clone https://github.com/<your-username>/cv-builder.git
+git clone https://github.com/MuhamadMursyied/cv-builder.git
 cd cv-builder
 
 # Option 1: open the file directly
