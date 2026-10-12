@@ -425,7 +425,8 @@ $('#file-import').addEventListener('change', function (e) {
     var msg = {
       'no-text': 'This PDF has no selectable text, so it is probably a scanned image or a photo. ATS software cannot read it either, which is a good reason to rebuild it here. Import a Word version if you have one, or type your details in.',
       'old-doc': 'Old .doc files cannot be read. Open it in Word or Google Docs, save it as .docx or PDF, then import that.',
-      'not-cv-json': 'That .json file was not saved from CV Builder.'
+      'not-cv-json': 'That .json file was not saved from CV Builder.',
+      'unsupported': file.name + ' is not a CV file this tool can read. Choose a PDF, Word (.docx) or text file.'
     }[err && err.message] || 'Could not read ' + file.name + '. Try saving it as PDF or .docx and import again.';
     showImportNotice('<h3>Import failed</h3><p>' + escapeHtml(msg) + '</p>', true);
   });

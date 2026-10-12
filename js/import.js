@@ -153,7 +153,12 @@ CV.extractCvLines = function (file) {
     if (isPdf || /\.pdf$/.test(name)) return pdfLines(buffer);
     if (isZip || /\.docx$/.test(name)) return docxLines(buffer);
     if (/\.doc$/.test(name)) throw new Error('old-doc');
-    return new TextDecoder().decode(buffer).split(/\r?\n/);
+    // No accept filter on the file input (some phone pickers grey out every file),
+    // so reject images and other binary files here.
+    var textContent = new TextDecoder().decode(buffer);
+    var binary = (textContent.slice(0, 4000).match(/[\u0000-\u0008\u000E-\u001F\uFFFD]/g) || []).length;
+    if (binary > 20) throw new Error('unsupported');
+    return textContent.split(/\r?\n/);
   });
 };
 
