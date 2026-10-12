@@ -137,9 +137,9 @@ CV.SECTIONS = {
   referees: {
     title: 'References', kind: 'list', addLabel: 'Add referee',
     fields: [
-      { key: 'name', label: 'Name', placeholder: 'Dr. Ahmad Faizal' },
+      { key: 'name', label: 'Name', placeholder: 'Dr. Abu bin Bakar' },
       { key: 'position', label: 'Position & organisation', placeholder: 'Senior Lecturer, Universiti Teknologi Malaysia' },
-      { key: 'contact', label: 'Contact', placeholder: 'ahmad.faizal@utm.my | +60 12-345 6789' }
+      { key: 'contact', label: 'Contact', placeholder: 'abu.bakar@example.com | +60 12-345 6789' }
     ]
   }
 };

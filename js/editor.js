@@ -35,9 +35,9 @@ function personalSection(cv) {
   };
   return '<details class="sec" data-sec="personal" open><summary><span class="sec-title">Personal details</span></summary>' +
     '<p class="hint">' + esc(CV.HINTS.personal) + '</p><div class="grid">' +
-    f('Full name', 'fullName', 'As in your IC, e.g. Nur Aisyah binti Rahman', 'name', true) +
+    f('Full name', 'fullName', 'As in your IC, e.g. Ali bin Abu', 'name', true) +
     f('Headline', 'headline', 'Target role, e.g. Graduate Mechatronics Engineer', 'off', true) +
-    f('Email', 'email', 'name@email.com', 'email') +
+    f('Email', 'email', 'name@example.com', 'email') +
     f('Phone', 'phone', '+60 12-345 6789', 'tel') +
     f('Location', 'location', 'Petaling Jaya, Selangor', 'address-level2') +
     f('LinkedIn', 'linkedin', 'linkedin.com/in/yourname', 'url') +
