@@ -24,6 +24,14 @@ function getMeasurer() {
   return measurer;
 }
 
+// Mixes a colour with white; amount 0 = colour, 1 = white.
+CV.tint = function (hex, amount) {
+  var n = parseInt(hex.slice(1), 16);
+  var mix = function (c) { return Math.round(c + (255 - c) * amount); };
+  var out = [mix(n >> 16), mix((n >> 8) & 255), mix(n & 255)];
+  return '#' + out.map(function (c) { return ('0' + c.toString(16)).slice(-2); }).join('');
+};
+
 function pdfFamily(theme) { return theme.font === 'serif' ? 'times' : 'helvetica'; }
 
 function textWidth(text, family, style, size) {
@@ -119,8 +127,11 @@ CV.layout = function (blocks, theme) {
   function text(str, x, size, style, color, align) {
     ops().push({ t: 'text', text: str, x: x, y: baseline(size), size: size, family: family, style: style, color: color, align: align || 'left' });
   }
-  function rule(atY, color, width) {
-    ops().push({ t: 'line', x1: left, y1: atY, x2: right, y2: atY, color: color, width: width });
+  function rule(atY, color, width, x2) {
+    ops().push({ t: 'line', x1: left, y1: atY, x2: x2 || right, y2: atY, color: color, width: width });
+  }
+  function box(x, top, w, h, color) {
+    ops().push({ t: 'rect', x: x, y: top, w: w, h: h, color: color });
   }
   function drawRuns(runs, x0, size, color) {
     runs.forEach(function (r) { text(r.text, x0 + r.x, size, r.style, color); });
@@ -135,18 +146,41 @@ CV.layout = function (blocks, theme) {
 
   var align = theme.align === 'center' ? 'center' : 'left';
   var alignX = align === 'center' ? PAGE_W / 2 : left;
+  var banner = theme.header === 'banner';
+  var nameColor = banner ? '#ffffff' : theme.accent;
+  var headlineColor = banner ? '#ffffff' : BODY_COLOR;
+  var contactColor = banner ? CV.tint(theme.accent, 0.82) : MUTED_COLOR;
+  var bulletChar = theme.bullet === 'dash' ? '–' : '•';
+  var headerOpen = true;
+
+  // Called once the name, headline and contact lines are placed.
+  function closeHeader() {
+    if (!headerOpen) return;
+    headerOpen = false;
+    if (banner) {
+      y += 10;
+      // Drawn first so the white header text sits on top of it.
+      ops().unshift({ t: 'rect', x: 0, y: 0, w: PAGE_W, h: y, color: theme.accent });
+      y += 4;
+    } else if (theme.header === 'rule') {
+      y += 3;
+      rule(y, theme.accent, 2);
+      y += 5;
+    }
+  }
 
   blocks.forEach(function (b, i) {
     var next = blocks[i + 1];
+    if (['name', 'headline', 'contact'].indexOf(b.type) === -1) closeHeader();
     switch (b.type) {
       case 'name': {
         var name = theme.nameCase === 'upper' ? b.text.toUpperCase() : b.text;
-        text(name, alignX, M.name, 'bold', theme.accent, align);
+        text(name, alignX, M.name, 'bold', nameColor, align);
         y += lineH(M.name);
         break;
       }
       case 'headline':
-        text(b.text, alignX, M.headline, 'normal', BODY_COLOR, align);
+        text(b.text, alignX, M.headline, 'normal', headlineColor, align);
         y += lineH(M.headline) + 1;
         break;
       case 'contact': {
@@ -165,25 +199,42 @@ CV.layout = function (blocks, theme) {
         });
         if (current) lines.push(current);
         lines.forEach(function (l) {
-          text(l, alignX, M.contact, 'normal', MUTED_COLOR, align);
+          text(l, alignX, M.contact, 'normal', contactColor, align);
           y += lineH(M.contact);
         });
         break;
       }
       case 'heading': {
-        var label = /caps/.test(theme.heading) ? b.text.toUpperCase() : b.text;
+        var style = theme.heading;
+        var label = /caps|solid/.test(style) ? b.text.toUpperCase() : b.text;
+        var h = lineH(M.heading);
         y += M.gapBeforeHeading;
         // Keep the heading with at least the first few lines of its section.
-        ensure(lineH(M.heading) + 6 + lineH(M.body) * 2);
-        if (theme.heading === 'overline') {
+        ensure(h + 8 + lineH(M.body) * 2);
+        if (style === 'overline') {
           rule(y, theme.accent, 0.8);
           y += 4;
         }
-        text(label, left, M.heading, 'bold', theme.accent);
-        y += lineH(M.heading);
-        if (theme.heading === 'rule' || theme.heading === 'capsrule') {
+        if (style === 'band' || style === 'solid') {
+          // A filled strip behind the heading; the heading itself stays real text.
+          box(left, y, contentW, h + 3, style === 'solid' ? theme.accent : CV.tint(theme.accent, 0.86));
+          y += 1.5;
+          text(label, left + 6, M.heading, 'bold', style === 'solid' ? '#ffffff' : theme.accent);
+          y += h + 1.5;
+        } else if (style === 'bar') {
+          box(left, y + 1, 3.5, h - 2, theme.accent);
+          text(label, left + 10, M.heading, 'bold', theme.accent);
+          y += h;
+        } else {
+          text(label, left, M.heading, 'bold', theme.accent);
+          y += h;
+        }
+        if (style === 'rule' || style === 'capsrule') {
           rule(y - 1, theme.accent, 0.8);
           y += 2;
+        } else if (style === 'underline') {
+          rule(y, theme.accent, 2, left + 36);
+          y += 3;
         }
         y += M.gapAfterHeading;
         afterHeading = true;
@@ -226,7 +277,7 @@ CV.layout = function (blocks, theme) {
           var lines = wrapSegs([{ text: item, style: 'normal' }], family, M.body, contentW - M.bulletIndent);
           lines.forEach(function (l, li) {
             ensure(lineH(M.body));
-            if (li === 0) text('•', left + 3, M.body, 'normal', BODY_COLOR);
+            if (li === 0) text(bulletChar, left + 3, M.body, 'normal', BODY_COLOR);
             drawRuns(l.runs, left + M.bulletIndent, M.body, BODY_COLOR);
             y += lineH(M.body);
           });
@@ -237,6 +288,7 @@ CV.layout = function (blocks, theme) {
     afterHeading = false;
   });
 
+  closeHeader();
   return { width: PAGE_W, height: PAGE_H, pages: pages, family: family };
 };
 

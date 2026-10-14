@@ -66,7 +66,7 @@ function renderTierAndThemes() {
     var recommended = t.tiers.indexOf(state.tier) !== -1;
     var serif = t.font === 'serif';
     return '<button type="button" class="theme" data-theme-id="' + t.id + '" aria-pressed="' + (t.id === state.theme) + '">' +
-      '<span class="theme-sample" style="--swatch:' + t.accent + ';font-family:' + (serif ? '\'Times New Roman\',Times,serif' : 'Arial,Helvetica,sans-serif') + '">' +
+      '<span class="theme-sample' + (t.header === 'banner' ? ' banner' : '') + ' h-' + t.heading + '" style="--swatch:' + t.accent + ';--tint:' + CV.tint(t.accent, 0.86) + ';font-family:' + (serif ? '\'Times New Roman\',Times,serif' : 'Arial,Helvetica,sans-serif') + '">' +
       '<b>Aa</b><i></i></span>' +
       '<span class="theme-name">' + t.name + '</span>' +
       (recommended ? '<span class="rec">Suits ' + CV.TIERS[state.tier].short + '</span>' : '') +

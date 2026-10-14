@@ -31,6 +31,9 @@ CV.buildPdf = function (cv) {
         doc.setFontSize(op.size);
         doc.setTextColor(op.color);
         doc.text(op.text, op.x, op.y, { align: op.align, baseline: 'alphabetic' });
+      } else if (op.t === 'rect') {
+        doc.setFillColor(op.color);
+        doc.rect(op.x, op.y, op.w, op.h, 'F');
       } else if (op.t === 'line') {
         doc.setDrawColor(op.color);
         doc.setLineWidth(op.width);

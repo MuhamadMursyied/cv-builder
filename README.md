@@ -1,6 +1,6 @@
 # CV Builder
 
-A browser-based CV builder for the Malaysian job market. Pick your career level, choose one of ten themes, fill in your details and download an ATS-friendly PDF or Word file. Everything runs locally in your browser: no account, no server, no data leaves your machine.
+A browser-based CV builder for the Malaysian job market. Pick your career level, choose one of twenty themes, fill in your details and download an ATS-friendly PDF or Word file. Everything runs locally in your browser: no account, no server, no data leaves your machine.
 
 **Live demo:** https://muhamadmursyied.github.io/cv-builder/
 
@@ -14,7 +14,7 @@ A browser-based CV builder for the Malaysian job market. Pick your career level,
   | Student / fresh graduate | Education (CGPA), internship, final-year project, co-curriculum | 1 page |
   | Mid-career professional | Summary, skills, experience with measurable results | 1 to 2 pages |
   | Senior / executive | Executive summary, key achievements, core competencies | 2 to 3 pages |
-- **Ten themes** (Modern, Classic, Executive, Minimal, Compact, Corporate, Scholar, Engineer, Heritage, Monochrome). Each one is ATS-safe by design; themes change only typography, accent colour and heading style.
+- **Twenty themes** (Modern, Classic, Executive, Minimal, Compact, Corporate, Scholar, Engineer, Heritage, Monochrome, Ocean, Emerald, Banner, Crimson, Slate, Royal, Lagoon, Graphite, Sunrise, Nordic). Each one is ATS-safe by design: themes change typography, colour, heading style (line, underline, side bar, tinted or solid strip) and header style (plain, rule or colour banner). Colour fills sit behind real text, so ATS software still reads every word.
 - **Import an existing CV**: upload a PDF, Word (.docx) or text file and the form fills itself in. It understands English and Malay headings (Pengalaman Kerja, Pendidikan, Kemahiran), Malaysian date styles (Jan 2022 - Kini) and leaves out IC number, race and religion. A review panel lists what was filled, anything it could not place, and an Undo button.
 - **Exports**: text-based PDF, Word (.docx), plain text (.txt) and a JSON backup you can load later.
 - **ATS check**: a score out of 100 with fixes for missing contact details, undated entries, weak bullet wording, length, sensitive personal data and more.

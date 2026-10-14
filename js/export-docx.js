@@ -107,8 +107,16 @@ function para(runs, o) {
   var props = '';
   if (o.keepNext) props += '<w:keepNext/>';
   if (o.border) {
-    props += '<w:pBdr><w:' + o.border + ' w:val="single" w:sz="6" w:space="1" w:color="' + hex(o.borderColor) + '"/></w:pBdr>';
+    props += '<w:pBdr><w:' + o.border + ' w:val="single" w:sz="' + (o.borderSize || 6) + '" w:space="' + (o.borderSpace || 1) + '" w:color="' + hex(o.borderColor) + '"/></w:pBdr>';
   }
+  if (o.box) {
+    // Same border on every side in the fill colour: Word merges neighbouring
+    // paragraphs with identical borders into one padded block.
+    props += '<w:pBdr>' + ['top', 'left', 'bottom', 'right'].map(function (side) {
+      return '<w:' + side + ' w:val="single" w:sz="4" w:space="6" w:color="' + hex(o.box) + '"/>';
+    }).join('') + '</w:pBdr>';
+  }
+  if (o.fill) props += '<w:shd w:val="clear" w:color="auto" w:fill="' + hex(o.fill) + '"/>';
   if (o.tabRight) props += '<w:tabs><w:tab w:val="right" w:pos="' + Math.round(o.tabRight) + '"/></w:tabs>';
   props += '<w:spacing w:before="' + Math.round((o.before || 0) * 20) + '" w:after="' + Math.round((o.after || 0) * 20) + '"/>';
   if (o.indent) props += '<w:ind w:left="' + o.indent + '" w:hanging="' + o.hanging + '"/>';
@@ -134,26 +142,51 @@ CV.buildDocx = function (cv) {
   var muted = '#4A4F57';
   var align = theme.align === 'center' ? 'center' : 'left';
   var tabPos = (595.28 - marginPt * 2) * 20;
-  var headingBorder = theme.heading === 'overline' ? 'top' : (/rule/.test(theme.heading) ? 'bottom' : null);
+  var hs = theme.heading;
+  var headingOpts = { before: compact ? 9 : 12, after: compact ? 4 : 6, keepNext: true, borderColor: theme.accent };
+  if (hs === 'overline') headingOpts.border = 'top';
+  if (/rule/.test(hs)) headingOpts.border = 'bottom';
+  if (hs === 'underline') { headingOpts.border = 'bottom'; headingOpts.borderSize = 12; }
+  if (hs === 'bar') { headingOpts.border = 'left'; headingOpts.borderSize = 24; headingOpts.borderSpace = 6; }
+  if (hs === 'band') headingOpts.fill = CV.tint(theme.accent, 0.86);
+  if (hs === 'solid') headingOpts.fill = theme.accent;
+  var headingColor = hs === 'solid' ? '#FFFFFF' : theme.accent;
+
+  var banner = theme.header === 'banner';
+  var header = [];   // name/headline/contact paragraphs, styled once complete
+  function headerPara(runs) {
+    header.push({ runs: runs, opts: { align: align, after: 2 } });
+  }
+  function closeHeader() {
+    if (!header.length) return;
+    header.forEach(function (h) {
+      if (banner) { h.opts.fill = theme.accent; h.opts.box = theme.accent; h.opts.after = 0; }
+    });
+    var last = header[header.length - 1].opts;
+    if (theme.header === 'rule') { last.border = 'bottom'; last.borderSize = 16; last.borderSpace = 4; last.borderColor = theme.accent; }
+    if (banner) last.after = 6;
+    header.forEach(function (h) { xml.push(para(h.runs, h.opts)); });
+    header = [];
+  }
 
   var xml = [];
   var afterHeading = false;
+  var bulletChar = theme.bullet === 'dash' ? '–' : '•';
 
   CV.buildBlocks(cv).forEach(function (b) {
+    if (['name', 'headline', 'contact'].indexOf(b.type) === -1) closeHeader();
     switch (b.type) {
       case 'name':
-        xml.push(para([run(theme.nameCase === 'upper' ? b.text.toUpperCase() : b.text, { bold: true, size: compact ? 20 : 22, color: theme.accent })], { align: align, after: 2 }));
+        headerPara([run(theme.nameCase === 'upper' ? b.text.toUpperCase() : b.text, { bold: true, size: compact ? 20 : 22, color: banner ? '#FFFFFF' : theme.accent })]);
         break;
       case 'headline':
-        xml.push(para([run(b.text, { size: compact ? 11 : 11.5, color: body })], { align: align, after: 2 }));
+        headerPara([run(b.text, { size: compact ? 11 : 11.5, color: banner ? '#FFFFFF' : body })]);
         break;
       case 'contact':
-        xml.push(para([run(b.items.join('  |  '), { size: compact ? 9 : 9.5, color: muted })], { align: align, after: 2 }));
+        headerPara([run(b.items.join('  |  '), { size: compact ? 9 : 9.5, color: banner ? CV.tint(theme.accent, 0.82) : muted })]);
         break;
       case 'heading':
-        xml.push(para([run(/caps/.test(theme.heading) ? b.text.toUpperCase() : b.text, { bold: true, size: compact ? 11 : 11.5, color: theme.accent })], {
-          before: compact ? 9 : 12, after: compact ? 4 : 6, keepNext: true, border: headingBorder, borderColor: theme.accent
-        }));
+        xml.push(para([run(/caps|solid/.test(hs) ? b.text.toUpperCase() : b.text, { bold: true, size: compact ? 11 : 11.5, color: headingColor })], headingOpts));
         afterHeading = true;
         return;
       case 'entry': {
@@ -181,13 +214,14 @@ CV.buildDocx = function (cv) {
         break;
       case 'bullets':
         b.items.forEach(function (item) {
-          xml.push(para([run('•', { size: bodySize, color: body }), run('', { tab: true }), run(item, { size: bodySize, color: body })], { indent: 240, hanging: 240, after: 1.5 }));
+          xml.push(para([run(bulletChar, { size: bodySize, color: body }), run('', { tab: true }), run(item, { size: bodySize, color: body })], { indent: 240, hanging: 240, after: 1.5 }));
         });
         break;
     }
     afterHeading = false;
   });
 
+  closeHeader();
   var margin = Math.round(marginPt * 20);
   var document = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' +

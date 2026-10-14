@@ -22,6 +22,9 @@ function r(n) { return Math.round(n * 100) / 100; }
 CV.renderPreview = function (container, layout) {
   var html = layout.pages.map(function (ops, i) {
     var body = ops.map(function (op) {
+      if (op.t === 'rect') {
+        return '<rect x="' + r(op.x) + '" y="' + r(op.y) + '" width="' + r(op.w) + '" height="' + r(op.h) + '" fill="' + op.color + '"/>';
+      }
       if (op.t === 'line') {
         return '<line x1="' + r(op.x1) + '" y1="' + r(op.y1) + '" x2="' + r(op.x2) + '" y2="' + r(op.y2) + '" stroke="' + op.color + '" stroke-width="' + op.width + '"/>';
       }
